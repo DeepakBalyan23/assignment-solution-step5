@@ -1,6 +1,11 @@
 package com.stackroute.datamunger.reader;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.HashMap;
+
 import com.stackroute.datamunger.query.DataSet;
+import com.stackroute.datamunger.query.*;
 import com.stackroute.datamunger.query.parser.QueryParameter;
 
 public class CsvQueryProcessor implements QueryProcessingEngine {
@@ -8,17 +13,20 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 	 * This method will take QueryParameter object as a parameter which contains the
 	 * parsed query and will process and populate the ResultSet
 	 */
-	public DataSet getResultSet(QueryParameter queryParameter) {
+	public DataSet getResultSet(QueryParameter queryParameter) throws Exception {
 
 		/*
 		 * initialize BufferedReader to read from the file which is mentioned in
 		 * QueryParameter. Consider Handling Exception related to file reading.
 		 */
+		FileReader fileReader = new FileReader(queryParameter.getFileName());
+		BufferedReader bufferedReader = new BufferedReader(fileReader);
 
 		/*
 		 * read the first line which contains the header. Please note that the headers
 		 * can contain spaces in between them. For eg: city, winner
 		 */
+		String[] headers = bufferedReader.readLine().split(",");
 
 		/*
 		 * read the next line which contains the first row of data. We are reading this
@@ -26,11 +34,16 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		 * that ipl.csv file contains null value in the last column. If you do not
 		 * consider this while splitting, this might cause exceptions later
 		 */
+		String[] fields = bufferedReader.readLine().split(",", headers.length);
 
 		/*
 		 * populate the header Map object from the header array. header map is having
 		 * data type <String,Integer> to contain the header and it's index.
 		 */
+		Header headerMap = new Header();
+		for(int i=0; i<headers.length;i++) {
+			headerMap.put(headers[i].trim(), i);
+		}
 
 		/*
 		 * We have read the first line of text already and kept it in an array. Now, we
@@ -39,6 +52,10 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		 * it's data type. To find the dataType by the field value, we will use
 		 * getDataType() method of DataTypeDefinitions class
 		 */
+		RowDataTypeDefinitions rowDataTypeDefinitionMap = new RowDataTypeDefinitions();
+		for(int i=0; i<fields.length;i++) {
+			rowDataTypeDefinitionMap.put(i, DataTypeDefinitions.getDataType(fields[i]));
+		}
 
 		/*
 		 * once we have the header and dataTypeDefinitions maps populated, we can start
