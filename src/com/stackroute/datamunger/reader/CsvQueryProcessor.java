@@ -24,14 +24,14 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		 */
 		FileReader fileReader = new FileReader(queryParameter.getFileName());
 		BufferedReader bufferedReader = new BufferedReader(fileReader);
-		bufferedReader.mark(1);
+		
 
 		/*
 		 * read the first line which contains the header. Please note that the headers
 		 * can contain spaces in between them. For eg: city, winner
 		 */
 		String[] headers = bufferedReader.readLine().split(",");
-
+		bufferedReader.mark(1);
 		/*
 		 * read the next line which contains the first row of data. We are reading this
 		 * line so that we can determine the data types of all the fields. Please note
@@ -75,7 +75,7 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		/*
 		 * skip the first line as it is already read earlier which contained the header
 		 */
-		bufferedReader.readLine();
+		//bufferedReader.readLine();
 		/* read one line at a time from the CSV file till we have any lines left */
 
 		/*
@@ -163,7 +163,7 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		} else if(bools.size()==3) {
 			int i = operators.indexOf("AND|and");
 			boolean res;
-			if(i<1)
+			if(i<0)
 				return bools.get(0) | bools.get(1) | bools.get(2);
 			else if(i==0)
 				return bools.get(0) & bools.get(1) | bools.get(2);
