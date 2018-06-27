@@ -20,7 +20,7 @@ public class DataTypeDefinitions {
 			return "java.lang.Integer";
 		} else if(input.matches("[0-9]+.[0-9]+")) {
 			return "java.lang.Double";
-		} else if(input.matches("^[0-9]{2}/[0-9]{2}/[0-9]{4}$") | input.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$") | input.matches("^[0-9]{2}-[a-z]{3}-[0-9]{2}$") | input.matches("^[0-9]{2}-[a-z]{3}-[0-9]{4}$") | input.matches("[0-9]{2}-[a-z]{3,9}-[0-9]{2}") | input.matches("^[0-9]{2}\\-[a-z]{3,9}\\-[0-9]{4}$")) {
+		} else if(input.matches("^[0-9]{2}/[0-9]{2}/[0-9]{4}$") | input.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$") | input.matches("^[0-9]{2}-[a-z]{3}-[0-9]{2}$") | input.matches("^[0-9]{2}-[a-z]{3}-[0-9]{4}$") | input.matches("^[0-9]{2}-[a-z]{3,9}-[0-9]{2}$") | input.matches("^[0-9]{2}-[a-z]{3,9}-[0-9]{4}$")) {
 			return "java.util.Date";
 		} else if(input.isEmpty()){
 			return "java.lang.Object";

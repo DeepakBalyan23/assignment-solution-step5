@@ -2,11 +2,12 @@ package com.stackroute.datamunger.reader;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.HashMap;
+import java.util.Arrays;
 
 import com.stackroute.datamunger.query.DataSet;
 import com.stackroute.datamunger.query.*;
 import com.stackroute.datamunger.query.parser.QueryParameter;
+import com.stackroute.datamunger.query.parser.Restriction;
 
 public class CsvQueryProcessor implements QueryProcessingEngine {
 	/*
@@ -21,6 +22,7 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		 */
 		FileReader fileReader = new FileReader(queryParameter.getFileName());
 		BufferedReader bufferedReader = new BufferedReader(fileReader);
+		bufferedReader.mark(1);
 
 		/*
 		 * read the first line which contains the header. Please note that the headers
@@ -67,11 +69,11 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		 */
 
 		/* reset the buffered reader so that it can start reading from the first line */
-
+		bufferedReader.reset();
 		/*
 		 * skip the first line as it is already read earlier which contained the header
 		 */
-
+		bufferedReader.readLine();
 		/* read one line at a time from the CSV file till we have any lines left */
 
 		/*
@@ -79,7 +81,39 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		 * will continue all the fields of the row. Please note that fields might
 		 * contain spaces in between. Also, few fields might be empty.
 		 */
-
+		DataSet dataSet = new DataSet();
+		long setRowIndex = 0;
+		Filter filter = new Filter();
+		String line;
+		while ((line = bufferedReader.readLine()) != null) {
+			String[] rowFields =line.split(",", headers.length);
+			boolean result = false;
+			for(int i=0; i<queryParameter.getRestrictions().size();i++) {
+				int index =headerMap.get(queryParameter.getRestrictions().get(i).getPropertyName());
+				if(i==0) {
+					result = filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index));
+				} else {
+					if(queryParameter.getLogicalOperators().get(i-1) == "OR")
+						result = result | filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index));
+					else
+						result = result & filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index));
+				}
+			}
+			if(result) {
+				Row rowMap = new Row();
+				for(int i=0; i<queryParameter.getFields().size();i++) {
+					if(queryParameter.getFields().get(i)=="*") {
+						for(int j=0;j<rowFields.length;j++) {
+							rowMap.put(j+"", rowFields[j]);
+						}
+					} else {
+						rowMap.put(headerMap.get(queryParameter.getFields().get(i))+"", rowFields[headerMap.get(queryParameter.getFields().get(i))]);
+					}
+				}
+				dataSet.put(setRowIndex++, rowMap);
+			}
+		}
+		bufferedReader.close();
 		/*
 		 * if there are where condition(s) in the query, test the row fields against
 		 * those conditions to check whether the selected row satifies the conditions
@@ -113,7 +147,7 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		 */
 
 		/* return dataset object */
-		return null;
+		return dataSet;
 	}
 
 }
