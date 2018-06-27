@@ -34,7 +34,7 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		 * read the next line which contains the first row of data. We are reading this
 		 * line so that we can determine the data types of all the fields. Please note
 		 * that ipl.csv file contains null value in the last column. If you do not
-		 * consider this while splitting, this might cause exceptions later
+		 * consider this while splitng setRowIndex = 1;ting, this might cause exceptions later
 		 */
 		String[] fields = bufferedReader.readLine().split(",", headers.length);
 
@@ -43,7 +43,7 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		 * data type <String,Integer> to contain the header and it's index.
 		 */
 		Header headerMap = new Header();
-		for(int i=0; i<headers.length;i++) {
+ 		for(int i=0; i<headers.length;i++) {
 			headerMap.put(headers[i].trim(), i);
 		}
 
@@ -82,32 +82,36 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		 * contain spaces in between. Also, few fields might be empty.
 		 */
 		DataSet dataSet = new DataSet();
-		long setRowIndex = 0;
+		long setRowIndex = 1;
 		Filter filter = new Filter();
 		String line;
 		while ((line = bufferedReader.readLine()) != null) {
 			String[] rowFields =line.split(",", headers.length);
 			boolean result = false;
-			for(int i=0; i<queryParameter.getRestrictions().size();i++) {
-				int index =headerMap.get(queryParameter.getRestrictions().get(i).getPropertyName());
-				if(i==0) {
-					result = filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index));
-				} else {
-					if(queryParameter.getLogicalOperators().get(i-1) == "OR")
-						result = result | filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index));
-					else
-						result = result & filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index));
+			if(queryParameter.getRestrictions()==null)
+				result =true;
+			else {
+				for(int i=0; i<queryParameter.getRestrictions().size();i++) {
+					int index =headerMap.get(queryParameter.getRestrictions().get(i).getPropertyName());
+					if(i==0) {
+						result = filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index));
+					} else {
+						if(queryParameter.getLogicalOperators().get(i-1).matches("OR|or"))
+							result = result | filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index));
+						else
+							result = result & filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index));
+					}
 				}
 			}
 			if(result) {
 				Row rowMap = new Row();
 				for(int i=0; i<queryParameter.getFields().size();i++) {
-					if(queryParameter.getFields().get(i)=="*") {
+					if(queryParameter.getFields().get(i).equals("*")) {
 						for(int j=0;j<rowFields.length;j++) {
-							rowMap.put(j+"", rowFields[j]);
+							rowMap.put(headers[j].trim(), rowFields[j]);
 						}
 					} else {
-						rowMap.put(headerMap.get(queryParameter.getFields().get(i))+"", rowFields[headerMap.get(queryParameter.getFields().get(i))]);
+						rowMap.put(queryParameter.getFields().get(i), rowFields[headerMap.get(queryParameter.getFields().get(i))]);
 					}
 				}
 				dataSet.put(setRowIndex++, rowMap);

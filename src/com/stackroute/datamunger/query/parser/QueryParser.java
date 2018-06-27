@@ -158,8 +158,8 @@ public class QueryParser {
 				condition = ">=";
 			} else if(str.contains("<=")) {
 				condition = "<=";
-			} else if(str.contains("<>")) {
-				condition = "<>";
+			} else if(str.contains("!=")) {
+				condition = "!=";
 			} else if(str.contains(">")) {
 				condition = ">";
 			} else if(str.contains("<")) {

@@ -20,7 +20,7 @@ public class Filter {
 	public boolean evaluateExpression(Restriction restriction, String fieldValue, String dataType) {
 		if(restriction.getCondition().equals("="))
 			return isEqual(fieldValue, restriction.getPropertyValue(), dataType);
-		else if(restriction.getCondition().matches("<>|!="))
+		else if(restriction.getCondition().matches("!="))
 			return isNotEqual(fieldValue, restriction.getPropertyValue(), dataType);
 		else if(restriction.getCondition().equals(">"))
 			return isGreaterThan(fieldValue, restriction.getPropertyValue(), dataType);
