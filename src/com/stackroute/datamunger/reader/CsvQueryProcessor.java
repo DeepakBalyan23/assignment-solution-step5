@@ -2,7 +2,9 @@ package com.stackroute.datamunger.reader;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.stackroute.datamunger.query.DataSet;
 import com.stackroute.datamunger.query.*;
@@ -88,20 +90,15 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 		while ((line = bufferedReader.readLine()) != null) {
 			String[] rowFields =line.split(",", headers.length);
 			boolean result = false;
+			ArrayList<Boolean> bools = new ArrayList<Boolean>();
 			if(queryParameter.getRestrictions()==null)
 				result =true;
 			else {
 				for(int i=0; i<queryParameter.getRestrictions().size();i++) {
 					int index =headerMap.get(queryParameter.getRestrictions().get(i).getPropertyName());
-					if(i==0) {
-						result = filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index));
-					} else {
-						if(queryParameter.getLogicalOperators().get(i-1).matches("OR|or"))
-							result = result | filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index));
-						else
-							result = result & filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index));
-					}
+					bools.add(filter.evaluateExpression(queryParameter.getRestrictions().get(i), rowFields[index].trim(), rowDataTypeDefinitionMap.get(index)));
 				}
+				result = solveOperators(bools, queryParameter.getLogicalOperators());
 			}
 			if(result) {
 				Row rowMap = new Row();
@@ -115,6 +112,7 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 					}
 				}
 				dataSet.put(setRowIndex++, rowMap);
+				
 			}
 		}
 		bufferedReader.close();
@@ -152,6 +150,31 @@ public class CsvQueryProcessor implements QueryProcessingEngine {
 
 		/* return dataset object */
 		return dataSet;
+	}
+	
+	private boolean solveOperators(ArrayList<Boolean> bools, List<String> operators) {
+		if(bools.size()==1) {
+			return bools.get(0);
+		} else if(bools.size()==2) {
+			if(operators.get(0).matches("AND|and"))
+				return bools.get(0)&bools.get(1);
+			else
+				return bools.get(0)|bools.get(1);
+		} else if(bools.size()==3) {
+			int i = operators.indexOf("AND|and");
+			boolean res;
+			if(i<1)
+				return bools.get(0) | bools.get(1) | bools.get(2);
+			else if(i==0)
+				return bools.get(0) & bools.get(1) | bools.get(2);
+			else if(i==1)
+				return bools.get(0) | bools.get(1) & bools.get(2);
+			else
+				return false;
+				
+		}
+		else
+			return false;
 	}
 
 }

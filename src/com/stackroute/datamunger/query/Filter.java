@@ -56,7 +56,7 @@ public class Filter {
 		if(dataType.equals("java.lang.Integer")) {
 			return Integer.parseInt(s1)==Integer.parseInt(s2);
 		} else if(dataType.equals("java.lang.Double")) {
-			return Double.parseDouble(s1)==Double.parseDouble(s2);
+			return Double.parseDouble(s1.toLowerCase())==Double.parseDouble(s2.toLowerCase());
 		} else if(dataType.equals("java.util.Date")) {
 			 SimpleDateFormat formatter = new SimpleDateFormat(getDateFormat(s1));
 			 try {
@@ -96,7 +96,7 @@ public class Filter {
 		if(dataType.equals("java.lang.Integer")) {
 			return Integer.parseInt(s1)>Integer.parseInt(s2);
 		} else if(dataType.equals("java.lang.Double")) {
-			return Double.parseDouble(s1)>Double.parseDouble(s2);
+			return Double.parseDouble(s1.toLowerCase())>Double.parseDouble(s2.toLowerCase());
 		} else if(dataType.equals("java.util.Date")) {
 			 SimpleDateFormat formatter = new SimpleDateFormat(getDateFormat(s1));
 			 try {
